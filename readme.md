@@ -4,6 +4,16 @@
 
 ---
 
+## 📸 系統畫面展示 (Screenshots)
+
+### 1. 📊 未來一週天氣預報與氣溫走勢儀表板
+![未來一週天氣預報儀表板](assets/forecast_dashboard.png)
+
+### 2. 🗺️ 全台 800+ 即時自動氣象站觀測地圖 (色階視覺化)
+![全台即時氣象站觀測地圖](assets/realtime_observation_map.png)
+
+---
+
 ## 📌 系統架構與流程
 
 ```mermaid
@@ -53,6 +63,9 @@ python -m uvicorn backend_api:app --reload --port 8000
 ## 📁 專案檔案結構
 
 ```text
+├── assets/                 # 系統截圖展示圖片
+│   ├── forecast_dashboard.png
+│   └── realtime_observation_map.png
 ├── app.py                  # Streamlit 氣象預報與地圖主程式
 ├── fetch_weather.py        # 擷取 CWA 一週預報資料
 ├── parse_weather.py        # 解析 JSON 結構並提取溫度
