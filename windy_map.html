@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CWA Taiwan Real-time Weather Map (Windy / Leaflet)</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        #topbar {
+            background: #1E3A8A; color: white; padding: 10px 16px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+        #topbar h1 { font-size: 1.1rem; font-weight: 600; }
+        #topbar .controls { display: flex; gap: 10px; align-items: center; }
+        #topbar select, #topbar button {
+            padding: 4px 10px; border-radius: 4px; border: none; font-size: 0.85rem; cursor: pointer;
+        }
+        #topbar button { background: #3B82F6; color: white; font-weight: 600; }
+        #topbar button:hover { background: #2563EB; }
+        #map-container { flex: 1; position: relative; }
+        #map { width: 100%; height: 100%; }
+        .legend {
+            background: rgba(255, 255, 255, 0.95); padding: 10px 14px;
+            border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            line-height: 1.5; font-size: 12px; color: #333;
+        }
+        .legend h4 { margin-bottom: 6px; font-size: 13px; color: #1E3A8A; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+        .legend-color { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+        .station-popup { font-size: 13px; line-height: 1.5; min-width: 150px; }
+        .station-popup h3 { color: #1E3A8A; margin-bottom: 4px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div id="topbar">
+        <h1>🌦️ 台灣即時氣象站觀測地圖 (CWA Real-time Observation)</h1>
+        <div class="controls">
+            <span id="station-count">載入測站中...</span>
+            <button onclick="loadStations()">🔄 重新整理</button>
+        </div>
+    </div>
+    
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 初始化 Leaflet 地圖 (中心座標: 台灣中部 23.7, 120.9，縮放級別: 8)
+        const map = L.map('map').setView([23.7, 120.9], 8);
+
+        // OSM 底圖圖層
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors | CWA OpenData'
+        }).addTo(map);
+
+        // 建立測站圖層組
+        const stationLayer = L.layerGroup().addTo(map);
+
+        // 溫度色階對照表
+        function getColorByTemperature(temp) {
+            if (temp < 10) return "#2B6CB0";       // 寒冷 (<10°C)
+            if (temp < 15) return "#3182CE";       // 涼冷 (10-15°C)
+            if (temp < 20) return "#38A169";       // 舒適涼爽 (15-20°C)
+            if (temp < 25) return "#ECC94B";       // 舒適溫暖 (20-25°C)
+            if (temp < 30) return "#ED8936";       // 偏熱 (25-30°C)
+            if (temp < 35) return "#E53E3E";       // 炎熱 (30-35°C)
+            return "#9B2C2C";                      // 極端高溫 (>35°C)
+        }
+
+        // 新增地圖圖例 (Legend)
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function (map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>🌡️ 氣溫色階圖例</h4>
+                <div class="legend-item"><span class="legend-color" style="background:#2B6CB0"></span> &lt; 10°C 寒冷</div>
+                <div class="legend-item"><span class="legend-color" style="background:#3182CE"></span> 10 – 15°C 涼冷</div>
+                <div class="legend-item"><span class="legend-color" style="background:#38A169"></span> 15 – 20°C 舒適</div>
+                <div class="legend-item"><span class="legend-color" style="background:#ECC94B"></span> 20 – 25°C 溫和</div>
+                <div class="legend-item"><span class="legend-color" style="background:#ED8936"></span> 25 – 30°C 溫暖</div>
+                <div class="legend-item"><span class="legend-color" style="background:#E53E3E"></span> 30 – 35°C 炎熱</div>
+                <div class="legend-item"><span class="legend-color" style="background:#9B2C2C"></span> &gt; 35°C 極熱</div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+
+        // 載入全台氣象站數據
+        async function loadStations() {
+            try {
+                document.getElementById('station-count').innerText = '載入中...';
+                
+                // 優先嘗試從本機 FastAPI 後端獲取，若無則從備存 json 載入
+                let stations = [];
+                try {
+                    const res = await fetch('/api/temperature/latest');
+                    if (res.ok) {
+                        const data = await res.json();
+                        stations = data.stations || [];
+                    }
+                } catch (e) {
+                    // 若未啟動 API 則載入本地 JSON 檔案
+                    const res = await fetch('cwa_stations_latest.json');
+                    const data = await res.json();
+                    stations = data.stations || [];
+                }
+
+                stationLayer.clearLayers();
+
+                stations.forEach(s => {
+                    const color = getColorByTemperature(s.temperature_c);
+                    const marker = L.circleMarker([s.lat, s.lon], {
+                        radius: 6,
+                        fillColor: color,
+                        fillOpacity: 0.85,
+                        color: "#FFFFFF",
+                        weight: 1
+                    });
+
+                    const popupContent = `
+                        <div class="station-popup">
+                            <h3>📍 ${s.station_name} (${s.station_id})</h3>
+                            <b>所屬地區：</b> ${s.county || ''} ${s.town || ''}<br/>
+                            <b>即時氣溫：</b> <span style="color:${color};font-weight:bold;font-size:14px;">${s.temperature_c} °C</span><br/>
+                            <b>相對濕度：</b> ${s.humidity_percent !== null ? s.humidity_percent + '%' : '無資料'}<br/>
+                            <b>即時風速：</b> ${s.wind_speed_mps !== null ? s.wind_speed_mps + ' m/s' : '無資料'}<br/>
+                            <b>觀測時間：</b> ${s.observed_at}
+                        </div>
+                    `;
+
+                    marker.bindPopup(popupContent);
+                    marker.addTo(stationLayer);
+                });
+
+                document.getElementById('station-count').innerText = `已顯示 ${stations.length} 個即時氣象站`;
+            } catch (err) {
+                console.error("載入氣象站失敗:", err);
+                document.getElementById('station-count').innerText = '載入失敗，請檢查後端連線';
+            }
+        }
+
+        // 首次加載
+        loadStations();
+    </script>
+</body>
+</html>
