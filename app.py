@@ -88,22 +88,32 @@ st.markdown("""
         gap: 14px;
         align-items: center;
         flex-wrap: wrap;
-        margin-top: 10px;
-        padding: 8px 12px;
-        background: #F8FAFC;
+        margin-top: 12px;
+        padding: 10px 16px;
+        background: #F1F5F9;
         border-radius: 8px;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #CBD5E1;
+        color: #0F172A !important;
+    }
+    .legend-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #0F172A !important;
+        margin-right: 4px;
     }
     .legend-item {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: #1E293B !important;
     }
     .legend-color {
         width: 14px;
         height: 14px;
         border-radius: 50%;
+        border: 1px solid rgba(0,0,0,0.15);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -367,15 +377,15 @@ with tab2:
         
         # 氣溫圖例
         st.markdown("""
-        <div class="legend-box">
-            <span style="font-weight: 600; font-size: 0.9rem;">🎨 氣溫色階圖例：</span>
-            <div class="legend-item"><div class="legend-color" style="background:#2B6CB0;"></div> &lt; 10°C 寒冷</div>
-            <div class="legend-item"><div class="legend-color" style="background:#3182CE;"></div> 10 – 15°C 涼冷</div>
-            <div class="legend-item"><div class="legend-color" style="background:#38A169;"></div> 15 – 20°C 舒適</div>
-            <div class="legend-item"><div class="legend-color" style="background:#ECC94B;"></div> 20 – 25°C 溫和</div>
-            <div class="legend-item"><div class="legend-color" style="background:#ED8936;"></div> 25 – 30°C 溫暖</div>
-            <div class="legend-item"><div class="legend-color" style="background:#E53E3E;"></div> 30 – 35°C 炎熱</div>
-            <div class="legend-item"><div class="legend-color" style="background:#9B2C2C;"></div> &gt; 35°C 極熱</div>
+        <div class="legend-box" style="background:#F1F5F9; border:1px solid #CBD5E1; color:#0F172A;">
+            <span class="legend-title" style="color:#0F172A; font-weight:700;">🎨 氣溫色階圖例：</span>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#2B6CB0;"></div> &lt; 10°C 寒冷</div>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#3182CE;"></div> 10 – 15°C 涼冷</div>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#38A169;"></div> 15 – 20°C 舒適</div>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#ECC94B;"></div> 20 – 25°C 溫和</div>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#ED8936;"></div> 25 – 30°C 溫暖</div>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#E53E3E;"></div> 30 – 35°C 炎熱</div>
+            <div class="legend-item" style="color:#1E293B;"><div class="legend-color" style="background:#9B2C2C;"></div> &gt; 35°C 極熱</div>
         </div>
         """, unsafe_allow_html=True)
     else:
