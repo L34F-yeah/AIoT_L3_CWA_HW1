@@ -2,6 +2,9 @@
 > **AIoT L3 HW10 Taiwan Weather Forecast**  
 > 整合中央氣象署 (CWA) 開放資料、SQLite 資料庫與 Streamlit / Leaflet 互動式氣象儀表板。
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://aiotl3cwahw1-vepgjoqqmshadxmaleamcs.streamlit.app/)
+🔗 **線上展示 (Live Demo)**：[https://aiotl3cwahw1-vepgjoqqmshadxmaleamcs.streamlit.app/](https://aiotl3cwahw1-vepgjoqqmshadxmaleamcs.streamlit.app/)
+
 ---
 
 ## 📸 系統畫面展示 (Screenshots)
