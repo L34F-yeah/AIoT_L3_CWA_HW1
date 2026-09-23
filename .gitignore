@@ -1,6 +1,35 @@
+# 環境變數與敏感資訊 (API Keys)
 .env
+.env.*
+!.env.example
+
+# Python 快取與編譯檔案
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+
+# 虛擬環境
 .venv/
-data.db
-cwa_raw_forecast.json
+venv/
+env/
+ENV/
+
+# 本地 SQLite 資料庫
+*.db
+*.sqlite
+*.sqlite3
+
+# 執行時抓取/產生的暫存 JSON 資料
+*.json
+!package.json
+
+# IDE 與編輯器設定
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 作業系統暫存檔
+.DS_Store
+Thumbs.db
