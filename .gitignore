@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+data.db
+cwa_raw_forecast.json
